@@ -1,0 +1,28 @@
+# Normalise line endings in the repository regardless of the platform a
+# contributor works on. Without this, a Windows checkout commits CRLF and every
+# cross-platform diff becomes unreadable.
+* text=auto eol=lf
+
+# Windows-native files keep CRLF so they behave when double-clicked.
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+*.ps1  text eol=crlf
+
+# Binary assets: never touched, never diffed as text.
+*.png  binary
+*.ico  binary
+*.icns binary
+*.jpg  binary
+*.jpeg binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+
+# Generated files: collapsed in pull request diffs, still versioned.
+package-lock.json     linguist-generated=true -diff
+web/package-lock.json linguist-generated=true -diff
+src-tauri/Cargo.lock  linguist-generated=true -diff
+
+# GitHub's language stats should describe the plugin, not its assets.
+assets/**   linguist-documentation
+docs/**     linguist-documentation

@@ -1,0 +1,91 @@
+{
+  "name": "opencode-agent-foundry",
+  "version": "1.0.0",
+  "description": "An OpenCode plugin: one orchestrator that asks what it needs, plans onto a Kanban board, dispatches role-based agents in parallel and reports back \u2014 with a native desktop UI. Agents are named by role, never by model.",
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "ai-agents",
+    "agent-orchestration",
+    "multi-agent",
+    "kanban",
+    "llm",
+    "tauri",
+    "developer-tools",
+    "coding-agent"
+  ],
+  "homepage": "https://github.com/gjoliveira9634/opencode-agent-foundry#readme",
+  "bugs": {
+    "url": "https://github.com/gjoliveira9634/opencode-agent-foundry/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gjoliveira9634/opencode-agent-foundry.git"
+  },
+  "license": "MIT",
+  "author": "Gabriel Jose Oliveira (https://github.com/gjoliveira9634)",
+  "type": "module",
+  "main": "dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./server": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "opencode-agent-foundry.schema.json",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "docs",
+    "assets/logo-dark.svg",
+    "assets/mark.svg"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "build:all": "npm run build && npm --prefix web run build",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck:all": "npm run typecheck && npm --prefix web run typecheck",
+    "test": "node --test test/*.test.mjs",
+    "test:web": "npm --prefix web run test",
+    "test:desktop": "cargo test --manifest-path src-tauri/Cargo.toml",
+    "test:all": "npm run build && npm run test && npm run smoke && npm run check:presets && npm run test:web && npm run check:styles",
+    "smoke": "node scripts/smoke.mjs",
+    "dev": "node scripts/dev.mjs",
+    "desktop:dev": "tauri dev",
+    "desktop:build": "npm run build:all && tauri build --no-bundle",
+    "desktop:bundle": "npm run build:all && tauri build",
+    "desktop:doctor": "node scripts/desktop-doctor.mjs",
+    "verify": "npm run typecheck:all && npm run test:all",
+    "check:styles": "npm --prefix web run build && npm --prefix web run check:styles",
+    "check:presets": "node scripts/check-presets.mjs",
+    "check:headless": "node scripts/headless-check.mjs",
+    "e2e:desktop": "node scripts/e2e-desktop.mjs",
+    "demo": "node scripts/demo.mjs",
+    "prepublishOnly": "npm run verify"
+  },
+  "types": "dist/index.d.ts",
+  "bin": {
+    "agentfoundry": "./dist/cli/index.js"
+  },
+  "dependencies": {
+    "zod": "^4.0.0"
+  },
+  "peerDependencies": {
+    "@opencode-ai/plugin": "*"
+  },
+  "devDependencies": {
+    "@opencode-ai/plugin": "1.18.13",
+    "@tauri-apps/cli": "^2.0.0",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  }
+}

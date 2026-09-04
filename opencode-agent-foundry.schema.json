@@ -1,0 +1,111 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "opencode-agent-foundry configuration",
+  "description": "Place at <project>/agent-foundry.json or ~/.config/opencode/agent-foundry.json. Project settings override global ones.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "version": {
+      "type": "integer",
+      "const": 2,
+      "default": 2,
+      "description": "Config format version. Version 1 files are migrated automatically on load."
+    },
+    "models": {
+      "type": "object",
+      "description": "Which LLM model each role uses. Roles and models are independent: a role is an organisational function, a model is just the engine it runs on. An empty string (or an absent key) means the role uses whichever model is selected in the chat. The orchestrator cannot appear here — it always uses the chat model.",
+      "additionalProperties": false,
+      "properties": {
+        "architect": { "$ref": "#/definitions/model" },
+        "lead": { "$ref": "#/definitions/model" },
+        "analyst": { "$ref": "#/definitions/model" },
+        "builder": { "$ref": "#/definitions/model" }
+      }
+    },
+    "execution": {
+      "type": "object",
+      "description": "The single execution flow. There are no modes.",
+      "additionalProperties": false,
+      "properties": {
+        "max_parallel": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 32,
+          "default": 4,
+          "description": "Hard ceiling on simultaneous executors."
+        },
+        "allow_file_overlap": {
+          "type": "boolean",
+          "default": false,
+          "description": "When false, two tasks declaring the same file never run at the same time."
+        },
+        "max_retries": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10,
+          "default": 2,
+          "description": "Attempts allowed before a task escalates instead of retrying."
+        }
+      }
+    },
+    "context": {
+      "type": "object",
+      "description": "Per-role context budget in tokens. The main lever on cost: it caps how much goes into each delegation.",
+      "additionalProperties": false,
+      "properties": {
+        "architect": { "type": "integer", "minimum": 1000, "default": 24000 },
+        "lead": { "type": "integer", "minimum": 1000, "default": 16000 },
+        "analyst": { "type": "integer", "minimum": 1000, "default": 12000 },
+        "builder": { "type": "integer", "minimum": 1000, "default": 8000 }
+      }
+    },
+    "desktop": {
+      "type": "object",
+      "description": "The native desktop window. Purely additive: the plugin works headless without it.",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean", "default": true },
+        "autostart": {
+          "type": "boolean",
+          "default": false,
+          "description": "Start the bridge when the plugin loads instead of on the first UI request."
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535,
+          "default": 0,
+          "description": "0 lets the OS pick a free port. Always bound to 127.0.0.1."
+        }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "description": "Spend ceilings. 0 disables a guard.",
+      "additionalProperties": false,
+      "properties": {
+        "max_cost_per_task_usd": { "type": "number", "minimum": 0, "default": 0 },
+        "max_cost_per_project_usd": { "type": "number", "minimum": 0, "default": 0 }
+      }
+    },
+    "pricing": {
+      "type": "object",
+      "description": "Optional price table keyed by the same model id used in `models`. Supplied by you, so no vendor pricing is compiled into the plugin. Unknown models fall back to a generic rate.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["input_per_1k", "output_per_1k"],
+        "properties": {
+          "input_per_1k": { "type": "number", "minimum": 0 },
+          "output_per_1k": { "type": "number", "minimum": 0 }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "model": {
+      "type": "string",
+      "default": "",
+      "description": "A model id OpenCode understands, e.g. \"<provider>/<model>\". Empty means: use the model selected in the chat."
+    }
+  }
+}

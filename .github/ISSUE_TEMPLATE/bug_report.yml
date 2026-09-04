@@ -1,0 +1,52 @@
+name: Bug report
+description: Something behaves differently from what it promises
+labels: [bug]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what you got instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: events
+    attributes:
+      label: Event log
+      description: >
+        The contents of `.agent-foundry/events.jsonl` for the run, if you can share it. This is
+        usually enough to reconstruct exactly what happened, and saves a round of questions.
+      render: text
+
+  - type: input
+    id: opencode-version
+    attributes:
+      label: OpenCode version
+      placeholder: "1.18.18"
+    validations:
+      required: true
+
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Plugin version
+      placeholder: "1.0.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options: [Windows, macOS, Linux]
+    validations:
+      required: true
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where did you see it
+      options: [Chat, Desktop window, CLI, More than one]
+    validations:
+      required: true

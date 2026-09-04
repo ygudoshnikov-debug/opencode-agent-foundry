@@ -1,0 +1,15 @@
+# Build output
+dist/
+web/dist/
+src-tauri/target/
+src-tauri/gen/
+
+# Dependencies
+node_modules/
+
+# Project state written by the plugin at runtime
+.agent-foundry/
+
+# Logs and local scratch
+*.log
+*.tsbuildinfo

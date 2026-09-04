@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640" role="img" aria-label="Agent Foundry — one orchestrator, a Kanban board, and agents that build in parallel">
+  <title>Agent Foundry</title>
+  <defs>
+    <linearGradient id="molten" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FDBA4D"/>
+      <stop offset="0.55" stop-color="#F97316"/>
+      <stop offset="1" stop-color="#EA580C"/>
+    </linearGradient>
+    <linearGradient id="plate" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1B2436"/>
+      <stop offset="1" stop-color="#0B1220"/>
+    </linearGradient>
+    <linearGradient id="page" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0B1220"/>
+      <stop offset="1" stop-color="#131C2E"/>
+    </linearGradient>
+    <radialGradient id="forgeGlow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#F97316" stop-opacity="0.30"/>
+      <stop offset="1" stop-color="#F97316" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1280" height="640" fill="url(#page)"/>
+  <ellipse cx="205" cy="250" rx="360" ry="300" fill="url(#forgeGlow)"/>
+
+  <g transform="translate(96 152) scale(0.72)">
+    <rect width="256" height="256" rx="58" fill="url(#plate)"/>
+    <rect x="1.5" y="1.5" width="253" height="253" rx="56.5" fill="none" stroke="#F97316" stroke-opacity="0.28" stroke-width="3"/>
+    <g stroke="url(#molten)" stroke-width="9" stroke-linecap="round" fill="none">
+      <path d="M128 92 L72 150"/>
+      <path d="M128 92 L128 150"/>
+      <path d="M128 92 L184 150"/>
+    </g>
+    <circle cx="128" cy="80" r="23" fill="url(#molten)"/>
+    <circle cx="72" cy="163" r="15" fill="url(#molten)"/>
+    <circle cx="128" cy="163" r="15" fill="url(#molten)"/>
+    <circle cx="184" cy="163" r="15" fill="url(#molten)"/>
+    <rect x="52" y="196" width="152" height="14" rx="7" fill="url(#molten)" opacity="0.92"/>
+  </g>
+
+  <g font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+    <text x="336" y="232" font-size="82" font-weight="400" fill="#94A3B8" letter-spacing="-1.5">Agent</text>
+    <text x="336" y="322" font-size="82" font-weight="700" fill="#F1F5F9" letter-spacing="-1.5">Foundry</text>
+
+    <text x="336" y="392" font-size="30" font-weight="500" fill="#CBD5E1">
+      One orchestrator. A Kanban board. Agents that build in parallel.
+    </text>
+
+    <g font-size="24" fill="#94A3B8">
+      <text x="336" y="452">An OpenCode plugin — agents named by role, never by model.</text>
+      <text x="336" y="490">Pick a vendor preset, watch the board, pay for each packet once.</text>
+    </g>
+
+    <g transform="translate(336 528)">
+      <rect x="0" y="0" width="196" height="44" rx="22" fill="#F97316" fill-opacity="0.14" stroke="#F97316" stroke-opacity="0.5"/>
+      <text x="98" y="29" font-size="20" font-weight="600" fill="#FDBA4D" text-anchor="middle">MIT · v1.0.0</text>
+      <rect x="216" y="0" width="238" height="44" rx="22" fill="#334155" fill-opacity="0.5" stroke="#475569" stroke-opacity="0.6"/>
+      <text x="335" y="29" font-size="20" font-weight="600" fill="#CBD5E1" text-anchor="middle">Tauri desktop included</text>
+    </g>
+  </g>
+</svg>
