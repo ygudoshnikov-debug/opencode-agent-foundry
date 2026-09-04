@@ -1,6 +1,6 @@
 {
   "name": "opencode-agent-foundry",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "An OpenCode plugin: one orchestrator that asks what it needs, plans onto a Kanban board, dispatches role-based agents in parallel and reports back \u2014 with a native desktop UI. Agents are named by role, never by model.",
   "keywords": [
     "opencode",
@@ -54,7 +54,7 @@
     "build:all": "npm run build && npm --prefix web run build",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "typecheck:all": "npm run typecheck && npm --prefix web run typecheck",
-    "test": "node --test test/*.test.mjs",
+    "test": "node scripts/run-tests.mjs",
     "test:web": "npm --prefix web run test",
     "test:desktop": "cargo test --manifest-path src-tauri/Cargo.toml",
     "test:all": "npm run build && npm run test && npm run smoke && npm run check:presets && npm run test:web && npm run check:styles",

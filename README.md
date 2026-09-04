@@ -15,7 +15,7 @@
   <a href="https://github.com/gjoliveira9634/opencode-agent-foundry/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/gjoliveira9634/opencode-agent-foundry/actions/workflows/ci.yml/badge.svg"></a>
   <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
   <img alt="node" src="https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg">
-  <img alt="version" src="https://img.shields.io/badge/version-1.0.0-orange.svg">
+  <img alt="version" src="https://img.shields.io/badge/version-1.0.1-orange.svg">
 </p>
 
 ---

@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] — 2026-09-04
+
+### Fixed
+
+- `npm test` failed on Windows under Node 20 with "Could not find test/*.test.mjs". The script
+  relied on a shell glob, which Linux shells expand and PowerShell does not, and which Node itself
+  only expands from version 22 — so it passed everywhere it was tried and failed on the first CI
+  run. Test discovery now happens in `scripts/run-tests.mjs`, which reads the directory and passes
+  explicit paths, giving the same result on every Node version, shell and platform.
+
 ## [1.0.0] — 2026-09-04
 
 First stable release. The plugin, the desktop window and the wire contract between them are now
@@ -68,4 +78,5 @@ covered by semantic versioning.
 - The CORS origin allowlist is explicit; preflight is answered before the auth gate, and never with
   a wildcard.
 
+[1.0.1]: https://github.com/gjoliveira9634/opencode-agent-foundry/releases/tag/v1.0.1
 [1.0.0]: https://github.com/gjoliveira9634/opencode-agent-foundry/releases/tag/v1.0.0
