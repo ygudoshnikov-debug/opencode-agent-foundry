@@ -1,0 +1,10 @@
+{
+  "$schema": "../opencode-agent-foundry.schema.json",
+  // Unlimited parallelism: max_parallel: 0 means the scheduler starts
+  // every ready task whose dependencies are met and whose files are not locked.
+  // Useful for maximizing throughput when cost is not a concern.
+  "version": 2,
+  "execution": {
+    "max_parallel": 0
+  }
+}

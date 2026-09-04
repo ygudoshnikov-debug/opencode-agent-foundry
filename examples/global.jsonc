@@ -1,0 +1,68 @@
+{
+  "$schema": "../opencode-agent-foundry.schema.json",
+  // Global configuration: place this at ~/.config/opencode/agent-foundry.json
+  // or ~/.config/opencode/opencode-agent-foundry.json to apply to all projects.
+  //
+  // Project-level configuration (agent-foundry.json in the project root) overrides these settings.
+  //
+  // This example binds the Anthropic preset and sets modest resource limits.
+
+  "version": 2,
+
+  // Model bindings: all roles use Anthropic models.
+  // Projects can override by having their own agent-foundry.json.
+  "models": {
+    "architect": "anthropic/claude-fable-5-1",
+    "lead": "anthropic/claude-opus-5",
+    "analyst": "anthropic/claude-sonnet-5",
+    "builder": "anthropic/claude-haiku-4-5"
+  },
+
+  // Execution settings: allow up to 4 concurrent tasks (default), with 2 retries.
+  "execution": {
+    "max_parallel": 4,
+    "allow_file_overlap": false,
+    "max_retries": 2
+  },
+
+  // Context budgets: per-role token limits for execution packets.
+  "context": {
+    "architect": 24000,
+    "lead": 16000,
+    "analyst": 12000,
+    "builder": 8000
+  },
+
+  // Desktop console: enabled by default, ephemeral port.
+  "desktop": {
+    "enabled": true,
+    "autostart": false,
+    "port": 0
+  },
+
+  // Spend limits: project-wide ceiling at $200, per-task at $5.
+  "limits": {
+    "max_cost_per_task_usd": 5.00,
+    "max_cost_per_project_usd": 200.00
+  },
+
+  // Pricing table (illustrative rates) for the models above.
+  "pricing": {
+    "anthropic/claude-fable-5-1": {
+      "input_per_1k": 0.003,
+      "output_per_1k": 0.015
+    },
+    "anthropic/claude-opus-5": {
+      "input_per_1k": 0.006,
+      "output_per_1k": 0.030
+    },
+    "anthropic/claude-sonnet-5": {
+      "input_per_1k": 0.003,
+      "output_per_1k": 0.015
+    },
+    "anthropic/claude-haiku-4-5": {
+      "input_per_1k": 0.0008,
+      "output_per_1k": 0.004
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "$schema": "../opencode-agent-foundry.schema.json",
+  // Bind models and set spend limits with a custom pricing table.
+  "version": 2,
+  "models": {
+    "architect": "anthropic/claude-opus-5",
+    "lead": "anthropic/claude-sonnet-5",
+    "analyst": "anthropic/claude-sonnet-5",
+    "builder": "anthropic/claude-haiku-4-5"
+  },
+  // Spending limits: surface a cost_warning when an estimate exceeds these.
+  "limits": {
+    "max_cost_per_task_usd": 2.50,
+    "max_cost_per_project_usd": 100.00
+  },
+  // Custom pricing table (illustrative rates). Unknown models use the fallback rate (0.002 / 0.008).
+  "pricing": {
+    "anthropic/claude-fable-5-1": {
+      "input_per_1k": 0.003,
+      "output_per_1k": 0.015
+    },
+    "anthropic/claude-opus-5": {
+      "input_per_1k": 0.006,
+      "output_per_1k": 0.030
+    },
+    "anthropic/claude-sonnet-5": {
+      "input_per_1k": 0.003,
+      "output_per_1k": 0.015
+    },
+    "anthropic/claude-haiku-4-5": {
+      "input_per_1k": 0.0008,
+      "output_per_1k": 0.004
+    }
+  }
+}

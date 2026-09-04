@@ -6,7 +6,8 @@ body:
     id: what-happened
     attributes:
       label: What happened
-      description: What you did, what you expected, and what you got instead.
+      description: Describe what you did, what you expected, and what you got instead.
+      placeholder: "Ran /foundry with objective X. Expected Y to happen, but Z happened instead."
     validations:
       required: true
 
@@ -15,8 +16,8 @@ body:
     attributes:
       label: Event log
       description: >
-        The contents of `.agent-foundry/events.jsonl` for the run, if you can share it. This is
-        usually enough to reconstruct exactly what happened, and saves a round of questions.
+        The contents of `.agent-foundry/events.jsonl` for the run, if you can share it.
+        This is usually sufficient to reconstruct the exact sequence of events.
       render: text
 
   - type: input
@@ -31,7 +32,7 @@ body:
     id: plugin-version
     attributes:
       label: Plugin version
-      placeholder: "1.0.0"
+      placeholder: "1.0.1"
     validations:
       required: true
 
@@ -46,7 +47,8 @@ body:
   - type: dropdown
     id: surface
     attributes:
-      label: Where did you see it
-      options: [Chat, Desktop window, CLI, More than one]
+      label: Surface
+      description: Where you observed the behavior.
+      options: [Chat, Desktop console, CLI, Multiple surfaces]
     validations:
       required: true

@@ -4,6 +4,36 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **Positioning and documentation.** The project is presented as hierarchical agent orchestration
+  for OpenCode: a rewritten README, a documentation set under `docs/` (getting started, agent
+  hierarchy, execution model, configuration reference, surface reference, desktop console,
+  architecture, cost and context, use cases, troubleshooting), ready-to-copy configuration examples
+  under `examples/`, and rewritten contribution, security and conduct policies.
+- **Desktop console theme.** Custom `light` and `dark` DaisyUI themes aligned with the brand mark:
+  neutral surfaces, one orange accent, semantic color reserved for states. The dashboard is
+  restyled around a stats row with neutral values.
+- **Dependency graph layout.** Nodes are placed by dependency depth, so the critical path reads
+  left to right and no row is clipped, and edges leave the dependent and land on the dependency.
+- **Preset label.** The fourth vendor preset is labeled "OpenCode Go" (its id stays `china`).
+- **Sample project.** `scripts/demo.mjs` seeds a billing-service migration with ten tasks across
+  every interesting column; `--configured` seeds a configured project so the console opens on the
+  dashboard. Screenshots are regenerated from it.
+- **Wording.** User-facing strings say "desktop console"; the orchestrator's picker description is
+  written in the third person.
+- **Verification gate.** `npm run check:links` verifies every relative Markdown link and heading
+  anchor and runs inside `npm run verify`; the graph layout has a test that pins the layered order.
+
+### Fixed
+
+- The JSON schema now allows `execution.max_parallel: 0` (unlimited) with no upper bound, matching
+  the runtime schema, and declares the `configured` field.
+- The console's event-type filter listed event types that do not exist (`PLAN_PROPOSED`,
+  `PLAN_ACCEPTED`, `QUESTION_RAISED`); it now lists the real ones.
+
 ## [1.0.1] — 2026-09-04
 
 ### Fixed
@@ -16,16 +46,16 @@ All notable changes to this project are documented here. The format follows
 
 ## [1.0.0] — 2026-09-04
 
-First stable release. The plugin, the desktop window and the wire contract between them are now
+First stable release. The plugin, the desktop console and the wire contract between them are now
 covered by semantic versioning.
 
 ### Added
 
-- **Vendor presets.** Four teams — OpenAI, Anthropic, Google and China — each filling all four roles
-  at once. Every role carries an ordered candidate list that resolves against the models your
+- **Vendor presets.** Four teams — OpenAI, Anthropic, Google and OpenCode Go — each filling all four
+  roles at once. Every role carries an ordered candidate list that resolves against the models your
   account can actually reach, so a preset written on one machine works on another. A role with no
   reachable candidate falls back to the chat model instead of writing an id that would fail later.
-- **A setup screen in the desktop window**, replacing four dropdowns that each defaulted to "use
+- **A setup screen in the desktop console**, replacing four dropdowns that each defaulted to "use
   defaults". It shows the model behind every role before you pick.
 - **`check:presets`** — verifies every preset id against OpenCode's own model catalogue, refuses
   alpha, preview and moving `-latest` builds as primaries, refuses a cost ladder that climbs from
@@ -60,7 +90,7 @@ covered by semantic versioning.
 
 - `POST /api/setup` returned a write summary while the client's types claimed a full runtime view,
   so the page silently lost its model catalogue and bindings after saving.
-- The desktop window opened on the dashboard when a configured project asked to reconfigure,
+- The desktop console opened on the dashboard when a configured project asked to reconfigure,
   dropping the request.
 - A brand new project reported an unreachable preset as its current selection, because an empty
   configuration and a fully unavailable preset both resolve to no bindings.
@@ -78,5 +108,6 @@ covered by semantic versioning.
 - The CORS origin allowlist is explicit; preflight is answered before the auth gate, and never with
   a wildcard.
 
+[Unreleased]: https://github.com/gjoliveira9634/opencode-agent-foundry/compare/v1.0.1...HEAD
 [1.0.1]: https://github.com/gjoliveira9634/opencode-agent-foundry/releases/tag/v1.0.1
 [1.0.0]: https://github.com/gjoliveira9634/opencode-agent-foundry/releases/tag/v1.0.0

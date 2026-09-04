@@ -1,0 +1,12 @@
+{
+  "$schema": "../opencode-agent-foundry.schema.json",
+  // Bind a different model per role, using the Anthropic preset models.
+  // Execution and context settings use defaults.
+  "version": 2,
+  "models": {
+    "architect": "anthropic/claude-fable-5-1",
+    "lead": "anthropic/claude-opus-5",
+    "analyst": "anthropic/claude-sonnet-5",
+    "builder": "anthropic/claude-haiku-4-5"
+  }
+}

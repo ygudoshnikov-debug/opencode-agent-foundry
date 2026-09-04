@@ -11,6 +11,11 @@
       "default": 2,
       "description": "Config format version. Version 1 files are migrated automatically on load."
     },
+    "configured": {
+      "type": "boolean",
+      "default": false,
+      "description": "Set by the setup flow when a human has explicitly chosen a configuration. Never set by hand-editing defaults."
+    },
     "models": {
       "type": "object",
       "description": "Which LLM model each role uses. Roles and models are independent: a role is an organisational function, a model is just the engine it runs on. An empty string (or an absent key) means the role uses whichever model is selected in the chat. The orchestrator cannot appear here — it always uses the chat model.",
@@ -29,10 +34,9 @@
       "properties": {
         "max_parallel": {
           "type": "integer",
-          "minimum": 1,
-          "maximum": 32,
+          "minimum": 0,
           "default": 4,
-          "description": "Hard ceiling on simultaneous executors."
+          "description": "How many tasks may run at once. 0 means unlimited: the scheduler starts everything whose dependencies and file locks allow."
         },
         "allow_file_overlap": {
           "type": "boolean",
@@ -61,7 +65,7 @@
     },
     "desktop": {
       "type": "object",
-      "description": "The native desktop window. Purely additive: the plugin works headless without it.",
+      "description": "The native desktop console. Purely additive: the plugin works headless without it.",
       "additionalProperties": false,
       "properties": {
         "enabled": { "type": "boolean", "default": true },

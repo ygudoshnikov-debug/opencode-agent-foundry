@@ -1,135 +1,158 @@
 # Architecture
 
-## The whole picture
+Agent Foundry structures specialized agents into a governed execution pipeline. This document
+describes the component design, module map, key architectural decisions and their rationale, and the
+invariants enforced by automated testing.
 
-```
-┌───────────────────────────────────────────────────────────────────────────┐
-│                                 OpenCode                                  │
-│                                                                           │
-│   chat session ── selected model ──┐                                      │
-│                                    │ (inherited, not configured)          │
-│   ┌────────────────────────────────▼──────────────────────────────────┐   │
-│   │                    opencode-agent-foundry                         │   │
-│   │                                                                   │   │
-│   │   agents/          orchestrator · architect · lead · analyst ·    │   │
-│   │                    builder      — roles only, never model names   │   │
-│   │                                                                   │   │
-│   │   tools/           foundry_* — thin wrappers over the engine      │   │
-│   │        engine.ts   ALL state transitions live here                │   │
-│   │                                                                   │   │
-│   │   core/            types · store · graph · board                  │   │
-│   │   orchestration/   scheduler · validator · router · delegation    │   │
-│   │   context/         packet.ts — per-role context budgets           │   │
-│   │   config/          schema · loader (+ v1 migration)               │   │
-│   │   runtime/         host.ts ── the seam to OpenCode itself:        │   │
-│   │                      catalogue, chat model, dispatch a role       │   │
-│   │                    setup.ts ─ session gate + the runtime view     │   │
-│   │                                                                   │   │
-│   │   desktop/                                                        │   │
-│   │        lifecycle.ts ── owns bridge + window, independently        │   │
-│   │        bridge.ts ───── HTTP + SSE, 127.0.0.1, bearer token        │   │
-│   │        launcher.ts ─── finds and spawns the native binary         │   │
-│   │        protocol.ts ─── the wire contract (types only)             │   │
-│   └────────────────────────────────┬──────────────────────────────────┘   │
-└────────────────────────────────────┼──────────────────────────────────────┘
-                                     │
-                    <project>/.agent-foundry/   ← single source of truth
-                                     │
-        ┌────────────────────────────┼────────────────────────────┐
-        │                            │                            │
-        ▼                            ▼                            ▼
-   chat replies              agentfoundry CLI              desktop bridge
-                                                                  │
-                                          HTTP + SSE on 127.0.0.1 │ Bearer token
-                                                                  ▼
-                                                      ┌───────────────────────┐
-                                                      │   Tauri shell (Rust)  │
-                                                      │   single instance     │
-                                                      │   bridge_config()     │──┐
-                                                      └───────────┬───────────┘  │
-                                                                  │              │ token
-                                                                  ▼              │ via IPC,
-                                                      ┌───────────────────────┐  │ never
-                                                      │  WebView              │  │ in a URL
-                                                      │  React + TypeScript   │◄─┘
-                                                      │  Dashboard · Kanban   │
-                                                      │  Tasks · Graph ·      │
-                                                      │  Events · Settings    │
-                                                      └───────────────────────┘
+## Component diagram
+
+```mermaid
+graph TB
+    subgraph opencode["OpenCode"]
+        direction TB
+        chat["chat session<br/>selected model"]
+    end
+    
+    subgraph plugin["opencode-agent-foundry plugin"]
+        agents["agents:<br/>orchestrator · architect · lead<br/>analyst · builder<br/>(roles only, no model names)"]
+        tools["tools: foundry_* wrappers<br/>over the engine"]
+        engine["engine.ts:<br/>all state transitions"]
+        core["core: types · store · graph · board"]
+        orch["orchestration:<br/>scheduler · validator<br/>router · delegation"]
+        context["context: packet.ts<br/>(per-role budgets)"]
+        config["config: schema · loader<br/>(v1 migration)"]
+        runtime["runtime: host.ts · setup.ts<br/>(seam to OpenCode)"]
+        desktop["desktop: lifecycle · bridge<br/>launcher · protocol"]
+    end
+    
+    subgraph state["Project state"]
+        files[".agent-foundry/<br/>project.json · tasks · plans<br/>events.jsonl · desktop.json"]
+    end
+    
+    subgraph surfaces["Surfaces"]
+        chat_replies["chat replies"]
+        cli["agentfoundry CLI"]
+        desktop_console["desktop console<br/>(Tauri + React)"]
+    end
+    
+    chat -->|model inherited| agents
+    agents --> tools
+    tools --> engine
+    engine --> core
+    engine --> orch
+    engine --> context
+    engine --> config
+    engine --> runtime
+    engine --> desktop
+    
+    engine -->|read/write| files
+    
+    files --> chat_replies
+    files --> cli
+    files -->|via bridge| desktop_console
+    
+    desktop_console -->|HTTP + SSE<br/>127.0.0.1<br/>bearer token| desktop
 ```
 
----
+## Module map
 
-## Decisions and why
+| Directory | Responsibility |
+|---|---|
+| `src/index.ts` | Plugin entry (`{ id, server }`). Registers tools directly; agents and commands through the `config` hook. |
+| `src/core/types.ts` | Domain types: roles (never models), task status, edges, evidence, gates, anchors. |
+| `src/core/store.ts` | File persistence: project state, tasks, plans, events. Capped history, atomic writes. |
+| `src/core/graph.ts` | Work graph: dependencies, cycles, critical path, blast radius, file overlaps. |
+| `src/core/board.ts` | Kanban projection: task statuses, status counts, summary view. Read-only, derived from tasks. |
+| `src/orchestration/scheduler.ts` | Ready-to-run candidates: dependencies satisfied, ordered by priority and blast radius, file locks, parallelism ceiling. |
+| `src/orchestration/validator.ts` | Evidence requirements, gate selection, required gates, failure policy. Completion validation. |
+| `src/orchestration/router.ts` | Role routing by complexity and failure count; escalation targets; cost estimation; pricing and limits. |
+| `src/orchestration/delegation.ts` | Packet building and dispatch; concurrent delegation with parallelism ceiling. |
+| `src/context/packet.ts` | Context budgets per role; packet composition (project, answers, board, focus task); trimming and truncation. |
+| `src/config/schema.ts` | Zod schema for configuration. All fields with type, default, validation. |
+| `src/config/loader.ts` | Config file loading, v1 migration, precedence (defaults ← global ← project). |
+| `src/config/presets.ts` | Vendor presets (OpenAI, Anthropic, Google, OpenCode Go): ordered role candidates, resolution. |
+| `src/runtime/host.ts` | Interface to OpenCode: model catalogue, session model, dispatch, tool allowlists, offline fallback. |
+| `src/runtime/opencode-host.ts` | OpenCode SDK-backed implementation of the host interface. Dispatch-time model resolution. |
+| `src/runtime/setup.ts` | Session setup: configuration application (keep/inherit/preset/custom), session gate, runtime view. |
+| `src/tools/engine.ts` | **All state transitions live here.** Stateful tools validate the board, enforce ordering, update state, append events. |
+| `src/tools/definitions.ts` | Tool wrappers. Call engine, return compact results with `next` hints. |
+| `src/desktop/lifecycle.ts` | Bridge and window ownership: independent startup/shutdown, single-instance enforcement. |
+| `src/desktop/bridge.ts` | HTTP server on 127.0.0.1: bearer token auth, CORS, fixed endpoint list, SSE for live updates. |
+| `src/desktop/launcher.ts` | Finds and spawns the native desktop binary per platform. |
+| `src/desktop/protocol.ts` | Wire contract types (request/response shapes, no logic). |
+| `web/` | React 19 + Vite + Tailwind + DaisyUI WebView app: Dashboard, Kanban, Graph, Tasks, Events, Settings. |
+| `src-tauri/` | Rust shell: Tauri 2, single-instance plugin, WebView, IPC, handshake file handling. |
+
+## Design decisions
 
 ### The orchestrator inherits the chat model by omission
 
 `AgentConfig.model` is optional in OpenCode. When it is absent, the runtime resolves the agent to
 the session's model. So instead of adding a "default orchestrator model" setting and keeping it in
-sync with the chat, the orchestrator's agent definition simply **has no `model` key**.
+sync with the chat, the orchestrator's agent definition simply has no `model` key.
 
-Consequences: the user changes the model in the chat and the orchestrator follows, with no second
-configuration surface and nothing to drift. `src/agents/index.ts` enforces this — it only emits
-`model` when a binding actually exists.
-
-The same mechanism gives the other roles a sensible zero-config default: unbound roles also inherit
-the chat model, so a fresh install works with no configuration at all.
+**Consequences:** The user changes the model in the chat and the orchestrator follows, with no second
+configuration surface and nothing to drift. The same mechanism gives the other roles a sensible
+zero-config default: unbound roles also inherit the chat model, so a fresh install works with no
+configuration at all.
 
 ### Agents are registered through the `config` hook, not returned
 
 The `Hooks` interface in `@opencode-ai/plugin` exposes `tool`, `config`, `event` and `dispose` —
-there is **no `agent` key**. Returning `agent: {...}` from the plugin is silently ignored. Agents and
+there is no `agent` key. Returning `agent: {...}` from the plugin is silently ignored. Agents and
 commands are contributed by mutating the object passed to the `config` hook, which is what
 `src/index.ts` does. Existing user definitions win, so a project can override anything.
 
+**Consequences:** The plugin contributes the default agent definitions on every initialization. A
+user's own agent or command in `opencode.json` will be preferred. This provides an override path
+and keeps the plugin's own definitions minimal.
+
 ### The plugin dispatches roles; the orchestrator never relays a packet
 
-The first design had the orchestrator delegate by printing the context packet into chat under an
+The first design had the orchestrator delegate by typing the context packet into chat under an
 `@builder` mention. Every packet was therefore billed twice — as the orchestrator's output tokens
-and again as the builder's input — and the wording that actually reached the builder was whatever
-the orchestrator chose to paraphrase, not what `packet.ts` had budgeted.
+and again as the builder's input — and the exact wording that reached the builder was whatever the
+orchestrator chose to paraphrase, not what the code had budgeted.
 
-`runtime/host.ts` is the seam: `catalogue()`, `sessionModel()` and `dispatch()`. The OpenCode-backed
-implementation creates a child session and prompts it directly. `orchestration/delegation.ts` builds
-the packet and sends it there.
+Instead, `runtime/host.ts` is the seam: `catalogue()`, `sessionModel()` and `dispatch()`. The
+OpenCode-backed implementation (`src/runtime/opencode-host.ts`) creates a child session and prompts
+it directly. `orchestration/delegation.ts` builds the packet and sends it there.
 
-What this buys, none of which was reachable through the relay:
+**Consequences:**
 
 - The packet is written by code and read by the role. It never enters the orchestrator's context.
-- The model is read from configuration **at dispatch time**. Rebinding a role takes effect on the
-  next dispatch with no restart — see the next section for why that matters.
 - Each role gets a tool allowlist. A builder cannot call planning or dispatch tools at all.
 - Concurrency is the plugin's decision, so `max_parallel: 0` can mean genuinely unlimited.
+- The context packet is billed once, not twice.
 
-An offline host is the default, so every path stays testable and headless use never touches the
-network. With no host, `foundry_execute` reports the failure rather than marking work done.
+An offline host (`OFFLINE_HOST`) is the default, so every path stays testable and headless use never
+touches the network.
 
 ### Model rebinding cannot work through agent re-registration
 
-OpenCode 1.18.18 loads only v1 plugins (`{id, server}`). A v2 plugin (`{id, setup}`) does not load
-at all — verified with a control experiment, not inferred from the types. That rules out
-`ctx.agent.reload()` and any live re-registration: an agent's `model` is frozen when OpenCode starts.
+OpenCode 1.18.x loads only v1 plugins (`{ id, server }`). A v2 plugin (`{ id, setup }`) does not load
+at all. That rules out `ctx.agent.reload()` and any live re-registration: an agent's `model` is
+frozen when OpenCode starts.
 
-So configuration changes cannot reach a role through its agent definition. They reach it through
-dispatch instead, which is resolved per call. This is why the previous section is not merely an
-optimisation — it is the only mechanism by which "change the model and it applies immediately" can
-be true on this runtime.
+Configuration changes cannot reach a role through its agent definition. They reach it through
+dispatch instead, which is resolved per call. This is the only mechanism by which "change the model
+and it applies immediately" can be true on this runtime.
 
 ### The flow is enforced at the tool layer, not only in the prompt
 
 The ordering used to live entirely in the orchestrator's system prompt. A model that lost the thread
 could record evidence for a task that never ran, review one still in flight, or apply a plan while
 its own questions sat unanswered — each producing a board that reports something that did not
-happen, which is worse than an error because the run continues on top of it.
+happen.
 
 `engine.ts` refuses those transitions outright: `foundry_apply_plan` with an unanswered question,
 `foundry_complete`/`foundry_fail` on a task that is not `IN_PROGRESS`, `foundry_review` on one that
 is not in `REVIEW`, and execution before a plan has produced tasks. Every refusal names the state
 the task is actually in and the call that fixes it, so the model recovers in one turn.
 
-This also lets the tool descriptions shrink: they no longer narrate the flow, because the code
-enforces it. Descriptions are re-sent on every request; a `next` hint costs tokens only on the turn
-its tool runs.
+**Consequences:** Tool descriptions can shrink — they no longer narrate the flow. The code enforces
+it. Descriptions are re-sent on every request; a `next` hint costs tokens only on the turn its tool
+runs.
 
 ### One execution flow
 
@@ -140,30 +163,29 @@ as the parallelism ceiling and the file locks allow.
 
 The autonomy the modes provided is preserved by mechanisms that were doing the real work anyway:
 `execution.max_parallel`, dependency gating, review gates, `execution.max_retries` with escalation,
-and the cost limits. Choosing a mode was a decision the user had to make before understanding the
-problem; the ceiling is a number they can set once.
+and cost warnings.
 
 ### The Kanban board is a projection, not a second store
 
-`tasks/*.json` is the only source of truth. The board is derived from it on demand
-(`src/core/board.ts`), which is why the chat, the CLI and the desktop window can never disagree.
-Summaries are deliberately small — the board is read by a language model on every check.
+`tasks/*.json` is the only source of truth. The board is derived from it on demand (`src/core/board.ts`),
+which is why the chat, the CLI and the desktop console can never disagree. Summaries are deliberately
+small — the board is read by a language model on every check.
 
 ### The desktop bridge: HTTP + SSE over loopback
 
 Considered: Tauri IPC proxying to Node, a WebSocket, and direct HTTP.
 
-Chosen: **HTTP for requests, SSE for live updates, both on `127.0.0.1`.** Reasons, in the priority
+**Chosen:** HTTP for requests, SSE for live updates, both on `127.0.0.1`. Reasons, in the priority
 order the requirements set out:
 
-- *Simplicity* — the plugin already runs in a Node-compatible runtime; `node:http` needs no
+- **Simplicity** — the plugin already runs in a Node-compatible runtime; `node:http` needs no
   dependency, and the WebView's `fetch` needs no client library. Routing everything through Rust
   would mean re-implementing each endpoint twice.
-- *Security* — loopback binding plus a per-process bearer token compared in constant time. The
+- **Security** — loopback binding plus a per-process bearer token compared in constant time. The
   token reaches the page through a Tauri command, so it never appears in a URL, history entry or
-  referrer. The handshake file is owner-only and deleted on stop.
-- *Latency* — loopback HTTP is sub-millisecond; SSE pushes changes rather than polling.
-- *Operational complexity* — one server, no protocol negotiation, no reconnect handshake beyond
+  referrer. The handshake file is owner-only (0600) and deleted on stop.
+- **Latency** — loopback HTTP is sub-millisecond; SSE pushes changes rather than polling.
+- **Operational complexity** — one server, no protocol negotiation, no reconnect handshake beyond
   what SSE gives for free.
 
 The surface is a fixed, small endpoint list. There is no filesystem, shell or proxy route, so a
@@ -180,32 +202,11 @@ deliberately decoupled:
 
 Window reuse is enforced twice: the lifecycle will not spawn while a child is alive, and the Tauri
 shell registers `tauri-plugin-single-instance`, which focuses the existing window and exits when a
-second process starts. That second path is what makes "open it again" behave like "bring it to the
-front".
+second process starts.
 
 The bridge is created lazily on first use (unless `desktop.autostart` is set), so a headless user
 never pays for a server they will not open. Its socket is `unref`'d, so it can never hold OpenCode
 open.
-
-### Cost is a design constraint, not a report
-
-A real run of the previous design built a tic-tac-toe app and consumed 32% of a five-hour quota.
-The forensics and the fixes:
-
-| Finding | Fix |
-|---|---|
-| `project.json` reached 39 KB, **98.7% duplicated planning payloads** | Plans moved to `plans/<id>.json`; `project.json` keeps a compact ref list |
-| Tool results were `JSON.stringify(task, null, 2)` including history, evidence and gates | Purpose-built summaries, unindented; detail is opt-in per call |
-| One `foundry_task_create` call per task | `foundry_apply_plan` creates the whole plan, resolving refs to ids |
-| 7 of 20 tasks cancelled on runtime file-lock conflicts | `WorkGraph.fileOverlaps()` reports overlapping independent tasks at plan time, via `foundry_doctor` |
-| 1.9 attempts per task, unbounded history re-sent each retry | History capped, `output_summary` truncated on write, packets carry only the last failure |
-| Every event append re-read the whole log to compute a sequence number | Sequence cached in the store; counted once |
-| `project.json` rewritten once per task creation | Project cached in memory, ids allocated in bulk, one `flush()` per operation |
-| Dependency propagation rebuilt the graph per dependent task | One graph, one pass |
-| Four overlapping plans proposed the same tasks | Planning is scoped per author, and the orchestrator prompt says so explicitly |
-
-The largest remaining lever is context size, which is why `src/context/packet.ts` exists and why
-each role has a token budget.
 
 ### Anchors
 
@@ -214,81 +215,60 @@ refuses a patch that removes or rewrites one and tells the caller to escalate in
 be perfectly self-consistent and still be solving the wrong problem; anchors are the fixed points
 that make that detectable.
 
----
+### Cost as a design constraint
 
-## Desktop gotchas worth knowing
+A reference run of the earlier design built a small project and revealed where the tokens went.
+Forensics and fixes:
 
-Four things about this stack fail in ways that look like something else. Each cost real debugging
-time and is now pinned by a test.
+| Finding | Remedy |
+|---|---|
+| `project.json` reached 39 KB, 98.7% duplicated planning payloads | Plans moved to `plans/<id>.json`; `project.json` keeps a compact ref list |
+| Tool results were `JSON.stringify(task, null, 2)` including history, evidence and gates | Purpose-built summaries, unindented; detail is opt-in per call |
+| One `foundry_task_create` call per task | `foundry_apply_plan` creates the whole plan, resolving refs to ids |
+| 7 of 20 tasks cancelled on runtime file-lock conflicts | `WorkGraph.fileOverlaps()` reports overlapping independent tasks at plan time, via `foundry_doctor` |
+| 1.9 attempts per task, unbounded history re-sent each retry | History capped at 3 attempts; `output_summary` truncated on write; packets carry only the last failure |
+| Every event append re-read the whole log to compute a sequence number | Sequence cached in the store; counted once |
+| `project.json` rewritten once per task creation | Project cached in memory, ids allocated in bulk, one `flush()` per operation |
+| Dependency propagation rebuilt the graph per dependent | One graph, one pass |
+| Four overlapping plans proposed the same tasks | Planning is scoped per author; the orchestrator prompt names this explicitly |
 
-**The WebView is not same-origin with the bridge, so CORS applies.** Tauri serves the page from
-`http://tauri.localhost` (Windows) or `tauri://localhost`, and the UI fetches `http://127.0.0.1:<port>`.
-Because every request carries an `Authorization` header, the browser sends a preflight `OPTIONS`
-first — and a preflight has no token by definition. Answering it from behind the auth gate returns
-401, the UI never connects, and the window still opens looking perfectly healthy. The bridge
-therefore answers preflights before authenticating, and echoes only allowlisted origins (the Tauri
-origins plus loopback), never a wildcard. The token remains the security boundary; CORS is not.
+The largest remaining lever is context size, which is why `src/context/packet.ts` exists and why
+each role has a token budget. The estimated fixed per-turn cost (orchestrator prompt + tool
+descriptions) is approximately 1,400 tokens.
 
-**Detect Tauri with `__TAURI_INTERNALS__`, not `__TAURI__`.** The latter exists only when
-`withGlobalTauri` is enabled. Checking for it fails silently in a correctly configured app.
+## Testing strategy
 
-**Import `@tauri-apps/api/core` statically.** A dynamic `import()` becomes its own chunk, and a
-chunk that fails to load inside the packaged app is indistinguishable from "not running in Tauri" —
-the UI renders as disconnected with nothing in any log to explain it.
-
-**Build through the Tauri CLI, not `cargo build`.** Raw cargo leaves Tauri in dev mode, so the
-packaged binary loads `devUrl` (`http://localhost:5173`) instead of the embedded frontend and shows
-the WebView's "can't reach this page". Use `npm run desktop:build`. Note also that
-`beforeDevCommand` / `beforeBuildCommand` run from the **package root**, not from `src-tauri/`,
-while `frontendDist` is resolved relative to `tauri.conf.json`.
-
-**A dead bridge does not always announce itself.** Two distinct failures look identical from the
-page's side, and both were reproduced against the real desktop app:
-
-- *Clean shutdown* — the plugin stopping ends the SSE stream with `done` and no error. Treating
-  that as "nothing happened" left a healthy indicator over data that would never update again.
-- *Abrupt death* — a killed process leaves the socket dangling; the reader simply never returns.
-  Nothing at all arrives to signal the drop.
-
-So the stream treats a clean close as a disconnect, AND runs a watchdog: the bridge pings every
-25 seconds, so silence past 70 seconds means the connection is gone regardless of what anyone
-reported. Reconnection attempts also re-resolve the address and token every time, because the
-plugin rotates its token on each start — a window that reused the token it loaded with could never
-come back.
-
-**Reopening the board must force a reconnect.** The single-instance guard focuses the existing
-window rather than creating one, so reopening after a plugin restart hands the user a window still
-holding a token that can no longer work. The shell therefore emits `foundry://reopen`, and the page
-resubscribes unconditionally — "already connected" is not evidence, for the reason above. Focusing
-a native window does not reliably raise a DOM focus event, which is why the explicit event exists.
-
-When a window opens but shows nothing, set `FOUNDRY_DESKTOP_PROBE=1` before launching. The shell
-then reports back what the page actually contains — whether Tauri's internals are present, whether
-React mounted, what the page believes its connection status to be, and the first of any error —
-which is otherwise invisible in a release build with no devtools. `FOUNDRY_PROBE_URL` points those
-reports at a collector of your choosing instead of the bridge.
-
-## Platform notes
-
-| | Windows | macOS | Linux |
-|---|---|---|---|
-| Runtime requirement | WebView2 (preinstalled on 11) | System WebKit | WebKitGTK 4.1 |
-| Build requirement | Rust + MSVC C++ build tools | Rust + Xcode CLI tools | Rust + `webkit2gtk-4.1`, `libayatana-appindicator3` |
-| Binary path | `src-tauri/target/release/*.exe` | `…/Agent Foundry.app/Contents/MacOS/Agent Foundry` | `src-tauri/target/release/<crate>` |
-| Handshake file mode | `chmod` is best-effort; NTFS ACLs do not map onto POSIX modes | 0600 enforced | 0600 enforced |
-
-`npm run desktop:doctor` checks all of these and prints the exact command to fix whatever is missing.
-
----
-
-## Testing
-
-| Layer | Runner | Covers |
+| Layer | Runner | Coverage |
 |---|---|---|
-| Backend | `node:test` against `dist/` | config + v1 migration, store, graph, scheduler, validator, full engine lifecycle, bridge over real HTTP, launcher |
+| Backend | `node:test` against `dist/` | Config + v1 migration, store, graph, scheduler, validator, full engine lifecycle, bridge over real HTTP, launcher |
 | Web UI | vitest + Testing Library | API client, SSE parsing, bridge resolution, board rendering, settings invariants, shortcuts |
-| Desktop | `cargo test` | argument/env parsing, handshake fallback, state management |
-| Wiring | `scripts/smoke.mjs` | plugin loads, tools present, agents registered via the config hook, **no agent carries a default model**, no mode concept survives, task lifecycle reaches the board |
+| Desktop | `cargo test` | Argument/env parsing, handshake fallback, state management |
+| Wiring | `scripts/smoke.mjs` | Plugin loads, tools present, agents registered via the config hook, no vendor names in agent identifiers, orchestrator without `model`, no agent carries a default model, no mode concept survives, task lifecycle reaches the board, tool descriptions within budget |
 
 The smoke test encodes the architectural invariants, so a regression that reintroduces a hardcoded
 model or an execution mode fails the build rather than shipping.
+
+## Invariants enforced by the smoke test
+
+The following properties are checked automatically on every build. Breaking any of them is an
+architectural regression and requires explicit sign-off:
+
+- **Agents are registered through the `config` hook**, not ignored as a return value.
+- **Agent names and descriptions must never reference an LLM model, vendor or version.** Roles are
+  `orchestrator`, `architect`, `lead`, `analyst`, `builder`. An agent's identity is its
+  organizational function, never the model it happens to run on.
+- **The orchestrator's agent definition has no `model` key**, so it inherits the chat model.
+- **No agent carries a hardcoded default model.** With an empty configuration every role falls
+  through to the model selected in the chat.
+- **No execution modes.** There is one flow. No `restricted`/`automatic`/`full` tools, commands or
+  configuration branches.
+- **The plugin ships no model defaults.** Vendor presets are a menu, not a default. Nothing in
+  `src/config/presets.ts` applies until a human picks it.
+- **The orchestrator never relays a context packet through chat.** The plugin dispatches roles
+  itself, so the packet is billed once and the model is resolved from config at dispatch time.
+- **Tool descriptions stay under 700 tokens in total** (re-sent on every request; flow guidance
+  belongs in the prompt and in each result's `next` field).
+- **Step ordering is enforced in `engine.ts`**, not only in the prompt. Refusals name the state and
+  the call that fixes it.
+- **`max_parallel: 0` means unlimited**, not "none". `Infinity` must never reach a surface — the
+  scheduler reports `0`.

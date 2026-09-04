@@ -1,7 +1,7 @@
 {
   "name": "opencode-agent-foundry",
   "version": "1.0.1",
-  "description": "An OpenCode plugin: one orchestrator that asks what it needs, plans onto a Kanban board, dispatches role-based agents in parallel and reports back \u2014 with a native desktop UI. Agents are named by role, never by model.",
+  "description": "Hierarchical agent orchestration for OpenCode: structure, govern, and observe multi-agent workflows with specialized roles, context budgets, and evidence-based completion.",
   "keywords": [
     "opencode",
     "opencode-plugin",
@@ -12,7 +12,13 @@
     "llm",
     "tauri",
     "developer-tools",
-    "coding-agent"
+    "coding-agent",
+    "orchestrator",
+    "hierarchical-agents",
+    "kanban-board",
+    "cost-control",
+    "opencode-agents",
+    "context-budgeting"
   ],
   "homepage": "https://github.com/gjoliveira9634/opencode-agent-foundry#readme",
   "bugs": {
@@ -43,6 +49,7 @@
     "LICENSE",
     "CHANGELOG.md",
     "docs",
+    "examples",
     "assets/logo-dark.svg",
     "assets/mark.svg"
   ],
@@ -57,7 +64,7 @@
     "test": "node scripts/run-tests.mjs",
     "test:web": "npm --prefix web run test",
     "test:desktop": "cargo test --manifest-path src-tauri/Cargo.toml",
-    "test:all": "npm run build && npm run test && npm run smoke && npm run check:presets && npm run test:web && npm run check:styles",
+    "test:all": "npm run build && npm run test && npm run smoke && npm run check:presets && npm run test:web && npm run check:styles && npm run check:links",
     "smoke": "node scripts/smoke.mjs",
     "dev": "node scripts/dev.mjs",
     "desktop:dev": "tauri dev",
@@ -67,6 +74,7 @@
     "verify": "npm run typecheck:all && npm run test:all",
     "check:styles": "npm --prefix web run build && npm --prefix web run check:styles",
     "check:presets": "node scripts/check-presets.mjs",
+    "check:links": "node scripts/check-links.mjs",
     "check:headless": "node scripts/headless-check.mjs",
     "e2e:desktop": "node scripts/e2e-desktop.mjs",
     "demo": "node scripts/demo.mjs",

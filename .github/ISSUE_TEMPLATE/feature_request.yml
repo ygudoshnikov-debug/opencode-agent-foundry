@@ -7,24 +7,26 @@ body:
     attributes:
       label: The problem
       description: >
-        What are you trying to do that this gets in the way of? Describe the situation rather than
-        the feature — the best solution is often not the one either of us thought of first.
+        Describe what you are trying to accomplish and how Agent Foundry gets in the way.
+        Explain the situation rather than proposing a solution — the best approach is
+        often not the first one either of us thought of.
+      placeholder: "Need to [goal]. Currently, [what blocks me]. Ideally, [desired outcome]."
     validations:
       required: true
 
   - type: textarea
     id: idea
     attributes:
-      label: What you had in mind
-      description: Optional. If you already have a shape in mind, describe it.
+      label: Proposed solution
+      description: Optional. If you have a shape in mind, describe it.
 
   - type: checkboxes
     id: invariants
     attributes:
-      label: Invariants
+      label: Architectural constraints
       description: >
-        These are load-bearing (see CONTRIBUTING.md). A request that needs one of them relaxed is
-        still worth filing — just say so, so we start from the real trade-off.
+        These are load-bearing (see CONTRIBUTING.md). If your request requires relaxing one,
+        file it anyway — name the trade-off and we can discuss it.
       options:
         - label: This does not require naming a model in an agent's identity
         - label: This does not require a model default that applies without the user choosing it

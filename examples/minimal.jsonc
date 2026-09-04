@@ -1,0 +1,7 @@
+{
+  "$schema": "../opencode-agent-foundry.schema.json",
+  // Minimal configuration: inherit everything from defaults and the chat model.
+  // All roles use whichever model is selected in the chat.
+  // All execution and context settings use their defaults.
+  "version": 2
+}

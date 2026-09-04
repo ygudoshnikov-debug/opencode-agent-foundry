@@ -1,0 +1,10 @@
+{
+  "$schema": "../opencode-agent-foundry.schema.json",
+  // Headless configuration: desktop console disabled.
+  // All features work through CLI and chat tools; no native window.
+  // Useful for CI, servers, or when the desktop console is not needed.
+  "version": 2,
+  "desktop": {
+    "enabled": false
+  }
+}
