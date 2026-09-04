@@ -82,7 +82,7 @@ export function launch(options: LaunchOptions): LaunchResult {
     return {
       status: 'missing-binary',
       detail:
-        'The desktop window has not been built yet. Run "npm run desktop:doctor" to check prerequisites, then "npm run desktop:build".',
+        'The desktop console has not been built yet. Run "npm run desktop:doctor" to check prerequisites, then "npm run desktop:build".',
     };
   }
 

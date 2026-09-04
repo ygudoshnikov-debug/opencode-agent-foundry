@@ -26,7 +26,7 @@ export interface AgentDef {
 
 const DESCRIPTIONS: Record<Role, string> = {
   orchestrator:
-    'Agent Foundry — start here. Describe what you want built; I ask what I need to know, plan the work onto a Kanban board, delegate it and report back. Runs on the model you selected in this chat.',
+    'Agent Foundry entry point. Describe an objective: the orchestrator clarifies requirements, plans the work onto a Kanban board, dispatches specialized roles and reports back. Runs on the model selected in this chat.',
   architect: 'Project scope: strategy, architecture, module split, acceptance criteria.',
   lead: 'Module scope: decomposes epics, owns module contracts and cross-module dependencies.',
   analyst: 'Functionality scope: turns a module slice into precise, verifiable tasks and reviews the result.',

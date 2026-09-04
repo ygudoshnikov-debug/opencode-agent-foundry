@@ -10,6 +10,22 @@ interface NodePosition {
   y: number;
 }
 
+/**
+ * A horizontal S-curve between two nodes. A dependency edge leaves the left
+ * edge of the dependent and lands on the right edge of what it waits on; a
+ * forward edge (blocks, parent_of) runs the other way.
+ */
+function edgePath(from: NodePosition, to: NodePosition, forward: boolean): string {
+  const width = 140;
+  const middle = 30;
+  const x1 = forward ? from.x + width : from.x;
+  const x2 = forward ? to.x : to.x + width;
+  const y1 = from.y + middle;
+  const y2 = to.y + middle;
+  const bend = forward ? 48 : -48;
+  return `M ${x1} ${y1} C ${x1 + bend} ${y1}, ${x2 - bend} ${y2}, ${x2} ${y2}`;
+}
+
 export default function GraphCanvas({ graph }: GraphCanvasProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [zoom, setZoom] = useState(1);
@@ -17,20 +33,47 @@ export default function GraphCanvas({ graph }: GraphCanvasProps) {
   const [dragging, setDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
-  // Position nodes based on topological order
-  const nodePositions: Record<string, NodePosition> = {};
-  const nodeSize = 120;
-  const levelHeight = 150;
-  const nodeWidth = 140;
+  // Layered layout: a task sits one column to the right of the deepest
+  // dependency it waits on, so the critical path reads left to right and
+  // independent work stacks vertically. Positions derive from the edges, not
+  // from a task's index in the order, so the picture is a picture of the graph.
+  const NODE_W = 140;
+  const NODE_H = 60;
+  const COLUMN = 210;
+  const ROW = 96;
+  const MARGIN = 40;
 
-  graph.order.forEach((id, index) => {
-    const level = index % 5;
-    const column = Math.floor(index / 5);
-    nodePositions[id] = {
-      x: column * nodeWidth + 50,
-      y: level * levelHeight + 50,
-    };
-  });
+  const upstreamOf = new Map<string, string[]>();
+  for (const edge of graph.edges) {
+    if (edge.kind !== 'depends_on') continue;
+    const list = upstreamOf.get(edge.from);
+    if (list) list.push(edge.to);
+    else upstreamOf.set(edge.from, [edge.to]);
+  }
+  const level = new Map<string, number>();
+  const depthOf = (id: string, seen: Set<string>): number => {
+    const known = level.get(id);
+    if (known !== undefined) return known;
+    if (seen.has(id)) return 0; // a cycle is reported above; do not recurse into it
+    seen.add(id);
+    const upstream = upstreamOf.get(id) ?? [];
+    const value = upstream.length ? 1 + Math.max(...upstream.map((dep) => depthOf(dep, seen))) : 0;
+    level.set(id, value);
+    return value;
+  };
+
+  const nodePositions: Record<string, NodePosition> = {};
+  const rowsPerColumn = new Map<number, number>();
+  for (const id of graph.order) {
+    const column = depthOf(id, new Set());
+    const row = rowsPerColumn.get(column) ?? 0;
+    rowsPerColumn.set(column, row + 1);
+    nodePositions[id] = { x: column * COLUMN + MARGIN, y: row * ROW + MARGIN };
+  }
+  const columns = Math.max(1, ...[...level.values()].map((value) => value + 1));
+  const rows = Math.max(1, ...rowsPerColumn.values());
+  const viewWidth = Math.max(1000, columns * COLUMN + MARGIN);
+  const viewHeight = Math.max(600, rows * ROW + MARGIN);
 
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
@@ -88,7 +131,8 @@ export default function GraphCanvas({ graph }: GraphCanvasProps) {
       <svg
         ref={svgRef}
         className="bg-base-200 rounded-box min-h-0 w-full flex-1 touch-none [user-select:none]"
-        viewBox="0 0 1000 600"
+        viewBox={`0 0 ${viewWidth} ${viewHeight}`}
+        preserveAspectRatio="xMinYMin meet"
         role="img"
         aria-label={`Dependency graph: ${graph.order.length} tasks, ${graph.edges.length} dependencies`}
         onWheel={handleWheel}
@@ -138,7 +182,7 @@ export default function GraphCanvas({ graph }: GraphCanvasProps) {
                 // list, and creating a task can reorder them. With an index key
                 // React would repaint existing paths into the wrong geometry.
                 key={`${edge.kind}:${edge.from}->${edge.to}`}
-                d={`M ${from.x + 70} ${from.y + 30} Q ${(from.x + to.x) / 2} ${Math.max(from.y, to.y) + 50} ${to.x + 70} ${to.y + 30}`}
+                d={edgePath(from, to, edge.kind === 'blocks' || edge.kind === 'parent_of')}
                 fill="none"
                 strokeDasharray={isBlocking ? '4 3' : undefined}
                 className={isCritical ? 'stroke-primary' : 'stroke-base-content/40'}
@@ -163,8 +207,8 @@ export default function GraphCanvas({ graph }: GraphCanvasProps) {
                       ? 'fill-base-100 stroke-primary stroke-2'
                       : 'fill-base-100 stroke-base-content/30'
                   }
-                  width="140"
-                  height="60"
+                  width={NODE_W}
+                  height={NODE_H}
                   rx="4"
                 />
                 <text

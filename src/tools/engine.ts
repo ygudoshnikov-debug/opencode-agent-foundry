@@ -414,9 +414,9 @@ export function createEngine(projectDir: string, options: EngineOptions = {}): E
       store.flush();
 
       // Planning that never becomes work is the single most expensive kind of
-      // waste: it is paid for in full and produces nothing. The tic-tac-toe run
-      // accumulated four overlapping plans this way. Surface any earlier plan
-      // still sitting unapplied so the orchestrator resolves it now.
+      // waste: it is paid for in full and produces nothing. A reference run of
+      // the earlier design accumulated four overlapping plans this way. Surface
+      // any earlier plan still sitting unapplied so the orchestrator resolves it now.
       const stranded = project.plans.filter((entry) => !entry.applied && entry.id !== id);
 
       return {

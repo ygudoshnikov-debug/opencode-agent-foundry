@@ -41,7 +41,7 @@ const COMMANDS: CommandDef[] = [
   },
   {
     name: 'foundry-setup',
-    description: 'Keep the current setup, or open the window to change it',
+    description: 'Keep the current setup, or open the desktop console to change it',
     template:
       'Call foundry_setup(action="status") and show me what is in effect. Offer the two answers: ' +
       'keep it, or open the window to configure it. If $ARGUMENTS already says which, apply it ' +
@@ -77,7 +77,7 @@ const COMMANDS: CommandDef[] = [
   },
   {
     name: 'foundry-ui',
-    description: 'Open the Agent Foundry desktop window',
+    description: 'Open the Agent Foundry desktop console',
     template:
       'Call foundry_ui and report the result. If the binary has not been built, tell me the exact ' +
       'commands to build it and confirm everything else keeps working without it.',

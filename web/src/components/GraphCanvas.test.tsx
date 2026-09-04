@@ -71,4 +71,17 @@ describe('GraphCanvas', () => {
     const blockedEdge = container.querySelector('g > path[stroke-dasharray]');
     expect(blockedEdge).toBeInTheDocument();
   });
+
+  it('places a task to the right of the deepest dependency it waits on', () => {
+    // task-1 depends on task-2, which depends on task-3, so the columns must
+    // read task-3, task-2, task-1 from left to right regardless of order.
+    const { container } = render(<GraphCanvas graph={mockGraphView} />);
+    const x = (id: string) => {
+      const label = [...container.querySelectorAll('text')].find((node) => node.textContent === id);
+      const group = label?.closest('g[transform]');
+      return Number(/translate\(([-\d.]+),/.exec(group?.getAttribute('transform') ?? '')?.[1]);
+    };
+    expect(x('task-3')).toBeLessThan(x('task-2'));
+    expect(x('task-2')).toBeLessThan(x('task-1'));
+  });
 });

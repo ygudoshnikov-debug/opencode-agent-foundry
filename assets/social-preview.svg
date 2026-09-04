@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640" role="img" aria-label="Agent Foundry — one orchestrator, a Kanban board, and agents that build in parallel">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640" role="img" aria-label="Agent Foundry — hierarchical agent orchestration for OpenCode">
   <title>Agent Foundry</title>
   <defs>
     <linearGradient id="molten" x1="0" y1="0" x2="0" y2="1">
@@ -15,12 +15,16 @@
       <stop offset="1" stop-color="#131C2E"/>
     </linearGradient>
     <radialGradient id="forgeGlow" cx="0.5" cy="0.5" r="0.5">
-      <stop offset="0" stop-color="#F97316" stop-opacity="0.30"/>
+      <stop offset="0" stop-color="#F97316" stop-opacity="0.22"/>
       <stop offset="1" stop-color="#F97316" stop-opacity="0"/>
     </radialGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#FFFFFF" stroke-opacity="0.035" stroke-width="1"/>
+    </pattern>
   </defs>
 
   <rect width="1280" height="640" fill="url(#page)"/>
+  <rect width="1280" height="640" fill="url(#grid)"/>
   <ellipse cx="205" cy="250" rx="360" ry="300" fill="url(#forgeGlow)"/>
 
   <g transform="translate(96 152) scale(0.72)">
@@ -43,19 +47,21 @@
     <text x="336" y="322" font-size="82" font-weight="700" fill="#F1F5F9" letter-spacing="-1.5">Foundry</text>
 
     <text x="336" y="392" font-size="30" font-weight="500" fill="#CBD5E1">
-      One orchestrator. A Kanban board. Agents that build in parallel.
+      Hierarchical agent orchestration for OpenCode.
     </text>
 
-    <g font-size="24" fill="#94A3B8">
-      <text x="336" y="452">An OpenCode plugin — agents named by role, never by model.</text>
-      <text x="336" y="490">Pick a vendor preset, watch the board, pay for each packet once.</text>
+    <g font-size="23" fill="#94A3B8">
+      <text x="336" y="448">Specialized roles at every scope. Budgeted context, parallel builders,</text>
+      <text x="336" y="484">evidence-gated completion. Observable from chat, CLI and desktop console.</text>
     </g>
 
     <g transform="translate(336 528)">
-      <rect x="0" y="0" width="196" height="44" rx="22" fill="#F97316" fill-opacity="0.14" stroke="#F97316" stroke-opacity="0.5"/>
-      <text x="98" y="29" font-size="20" font-weight="600" fill="#FDBA4D" text-anchor="middle">MIT · v1.0.0</text>
-      <rect x="216" y="0" width="238" height="44" rx="22" fill="#334155" fill-opacity="0.5" stroke="#475569" stroke-opacity="0.6"/>
-      <text x="335" y="29" font-size="20" font-weight="600" fill="#CBD5E1" text-anchor="middle">Tauri desktop included</text>
+      <rect x="0" y="0" width="176" height="44" rx="22" fill="#F97316" fill-opacity="0.14" stroke="#F97316" stroke-opacity="0.5"/>
+      <text x="88" y="29" font-size="20" font-weight="600" fill="#FDBA4D" text-anchor="middle">OpenCode plugin</text>
+      <rect x="196" y="0" width="140" height="44" rx="22" fill="#334155" fill-opacity="0.5" stroke="#475569" stroke-opacity="0.6"/>
+      <text x="266" y="29" font-size="20" font-weight="600" fill="#CBD5E1" text-anchor="middle">MIT license</text>
+      <rect x="356" y="0" width="236" height="44" rx="22" fill="#334155" fill-opacity="0.5" stroke="#475569" stroke-opacity="0.6"/>
+      <text x="474" y="29" font-size="20" font-weight="600" fill="#CBD5E1" text-anchor="middle">Native desktop console</text>
     </g>
   </g>
 </svg>

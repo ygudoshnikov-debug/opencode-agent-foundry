@@ -81,7 +81,7 @@ export const PRESETS: readonly Preset[] = [
   },
   {
     id: 'china',
-    label: 'China',
+    label: 'OpenCode Go',
     summary: 'Kimi, Qwen, GLM and DeepSeek — one lab per role, through OpenCode Go.',
     roles: {
       architect: ['opencode-go/kimi-k3', 'opencode-go/qwen3.8-max', 'opencode-go/glm-5.3'],

@@ -161,7 +161,7 @@ export default function Settings() {
             <h2 className="card-title text-lg">Execution</h2>
             <p className="text-base-content/70 text-sm">
               How many builders may run at the same time. Tasks that touch the same files are still
-              serialised, whatever this is set to.
+              serialized, whatever this is set to.
             </p>
           </div>
 
@@ -218,7 +218,7 @@ export default function Settings() {
             <div className="stat">
               <div className="stat-title">Same-file overlap</div>
               <div className="stat-value text-2xl">
-                {config.execution.allow_file_overlap ? 'Allowed' : 'Serialised'}
+                {config.execution.allow_file_overlap ? 'Allowed' : 'Serialized'}
               </div>
               <div className="stat-desc">Two tasks editing one file</div>
             </div>

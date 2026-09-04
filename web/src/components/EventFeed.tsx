@@ -8,15 +8,23 @@ interface EventFeedProps {
 
 const EVENT_TYPES = [
   'ALL',
+  'PHASE_CHANGED',
+  'QUESTION_ASKED',
+  'QUESTION_ANSWERED',
+  'PLAN_SUBMITTED',
+  'PLAN_APPLIED',
   'TASK_CREATED',
-  'TASK_STATUS_CHANGED',
   'TASK_UPDATED',
+  'TASK_STATUS_CHANGED',
+  'TASK_STARTED',
+  'TASK_COMPLETED',
   'TASK_FAILED',
   'TASK_BLOCKED',
-  'PLAN_PROPOSED',
-  'PLAN_ACCEPTED',
-  'QUESTION_RAISED',
-  'QUESTION_ANSWERED',
+  'TASK_UNBLOCKED',
+  'REVIEW_DECIDED',
+  'ESCALATION_RAISED',
+  'SCHEDULER_DECISION',
+  'COST_RECORDED',
 ];
 
 function formatTime(timestamp: string): string {
@@ -38,15 +46,23 @@ function formatTime(timestamp: string): string {
 
 function getEventIcon(type: string): string {
   const icons: Record<string, string> = {
-    TASK_CREATED: '✓',
-    TASK_STATUS_CHANGED: '→',
-    TASK_UPDATED: '◆',
-    TASK_FAILED: '✕',
-    TASK_BLOCKED: '⊗',
-    PLAN_SUBMITTED: '⊞',
-    PLAN_APPLIED: '☑',
+    PHASE_CHANGED: '⇢',
     QUESTION_ASKED: '?',
     QUESTION_ANSWERED: '!',
+    PLAN_SUBMITTED: '⊞',
+    PLAN_APPLIED: '☑',
+    TASK_CREATED: '+',
+    TASK_UPDATED: '◆',
+    TASK_STATUS_CHANGED: '→',
+    TASK_STARTED: '▶',
+    TASK_COMPLETED: '✓',
+    TASK_FAILED: '✕',
+    TASK_BLOCKED: '⊗',
+    TASK_UNBLOCKED: '⊙',
+    REVIEW_DECIDED: '⚖',
+    ESCALATION_RAISED: '↑',
+    SCHEDULER_DECISION: '≡',
+    COST_RECORDED: '$',
   };
   return icons[type] || '•';
 }
@@ -68,7 +84,7 @@ export default function EventFeed({ events, typeFilter = 'ALL', onFilterChange }
         >
           {EVENT_TYPES.map((type) => (
             <option key={type} value={type}>
-              {type === 'ALL' ? 'All Events' : type.replace(/_/g, ' ')}
+              {type === 'ALL' ? 'All events' : type.replace(/_/g, ' ')}
             </option>
           ))}
         </select>

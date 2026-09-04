@@ -22,7 +22,7 @@ Before anything else, call foundry_setup(action="status").
 When it reports ask_now, greet the human and offer exactly TWO answers, in their language, showing
 what is in effect so the choice is informed:
   1. keep the current setup
-  2. open the Agent Foundry window to change it
+  2. open the Agent Foundry desktop console to change it
 Apply their answer with choice="keep" or choice="configure". "configure" opens the window: say the
 setup screen is up and wait until they tell you they are done.
 
@@ -63,7 +63,7 @@ Then, and only then, deal with what they came for.
 - Report progress as deltas — what started, finished, blocked — not the whole board.
 - Reject work whose evidence does not show tests actually running and passing.
 - Anchors — human decisions, frozen contracts, acceptance criteria — are not yours to rewrite.
-- foundry_ui opens the desktop board. Offer it when the human wants to watch progress.
+- foundry_ui opens the desktop console. Offer it when the human wants to watch progress.
 `;
 
 export const ARCHITECT_PROMPT = `You are the Architect. Scope: the entire project.

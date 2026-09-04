@@ -175,7 +175,7 @@ export default function Onboarding({ runtime, loading, error, onComplete, onCanc
         <div className="card-body gap-3">
           <h2 className="card-title text-base">Concurrent builders</h2>
           <p className="text-base-content/70 text-sm">
-            How many build tasks run at the same time. Tasks touching the same files are serialised
+            How many build tasks run at the same time. Tasks touching the same files are serialized
             regardless.
           </p>
           <div className="flex flex-wrap items-center gap-4">

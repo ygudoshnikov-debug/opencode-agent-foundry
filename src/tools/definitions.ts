@@ -99,7 +99,7 @@ export function createFoundryTools(deps: ToolDeps): ToolMap {
       description:
         'Session setup — call this first in a new conversation. action="status" reports what is in ' +
         'effect and whether to ask; action="apply" records the answer. choice="keep" leaves ' +
-        'everything as it is; choice="configure" opens the desktop window on its setup screen.',
+        'everything as it is; choice="configure" opens the desktop console on its setup screen.',
       args: {
         action: z.enum(['status', 'apply']),
         choice: z.enum(['keep', 'configure', 'preset', 'inherit', 'custom']).optional(),
@@ -137,7 +137,7 @@ export function createFoundryTools(deps: ToolDeps): ToolMap {
                       keep: `Keep the current setup (${summary}, ${
                         view.builders === 0 ? 'unlimited' : view.builders
                       } builders)`,
-                      configure: 'Open the Agent Foundry window to choose models and builders',
+                      configure: 'Open the Agent Foundry desktop console to choose models and builders',
                     },
                     next:
                       'Put exactly these two options to the human, in their language, showing what ' +
@@ -170,7 +170,7 @@ export function createFoundryTools(deps: ToolDeps): ToolMap {
             const view = await engine.runtime();
             return {
               opened: false,
-              reason: opened?.detail ?? opened?.status ?? 'the desktop window is unavailable',
+              reason: opened?.detail ?? opened?.status ?? 'the desktop console is unavailable',
               presets: view.presets.map((preset) => ({
                 id: preset.id,
                 label: preset.label,
@@ -440,7 +440,7 @@ export function createFoundryTools(deps: ToolDeps): ToolMap {
 
   if (deps.openDesktop) {
     tools['foundry_ui'] = tool({
-      description: 'Open the Agent Foundry desktop window — a native window, not a browser. Reuses the existing one.',
+      description: 'Open the Agent Foundry desktop console — a native window, not a browser tab. Reuses the existing one.',
       args: {},
       async execute() {
         try {

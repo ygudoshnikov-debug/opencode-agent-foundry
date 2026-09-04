@@ -1,9 +1,101 @@
 @import "tailwindcss";
+
+/*
+ * Brand theme.
+ *
+ * The visual identity is the mark: a molten-orange orchestrator fanning out
+ * over a dark plate. The interface follows it with one accent (primary) on a
+ * narrow neutral scale, and reserves saturated color for semantic states. Both
+ * themes are named `light` and `dark` on purpose: the title bar and Settings
+ * switch by writing those names into `data-theme`, and the system option
+ * removes the attribute so `prefersdark` decides.
+ */
 @plugin "daisyui" {
-  themes:
-    light --default,
-    dark;
+  themes: false;
   root: ":root";
   prefix: "";
   logs: false;
+}
+
+@plugin "daisyui/theme" {
+  name: "light";
+  default: true;
+  prefersdark: false;
+  color-scheme: light;
+
+  --color-base-100: oklch(99% 0.003 250);
+  --color-base-200: oklch(96.5% 0.005 250);
+  --color-base-300: oklch(91% 0.009 250);
+  --color-base-content: oklch(23% 0.03 262);
+
+  --color-primary: oklch(66% 0.19 45);
+  --color-primary-content: oklch(99% 0.01 60);
+  --color-secondary: oklch(42% 0.05 262);
+  --color-secondary-content: oklch(98% 0.005 262);
+  --color-accent: oklch(55% 0.1 200);
+  --color-accent-content: oklch(98% 0.01 200);
+  --color-neutral: oklch(25% 0.03 262);
+  --color-neutral-content: oklch(96% 0.005 262);
+
+  --color-info: oklch(58% 0.14 245);
+  --color-info-content: oklch(98% 0.01 245);
+  --color-success: oklch(58% 0.15 155);
+  --color-success-content: oklch(98% 0.02 155);
+  --color-warning: oklch(76% 0.16 80);
+  --color-warning-content: oklch(25% 0.06 80);
+  --color-error: oklch(58% 0.2 25);
+  --color-error-content: oklch(98% 0.01 25);
+
+  --radius-selector: 1rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+@plugin "daisyui/theme" {
+  name: "dark";
+  default: false;
+  prefersdark: true;
+  color-scheme: dark;
+
+  --color-base-100: oklch(22% 0.026 262);
+  --color-base-200: oklch(18% 0.024 262);
+  --color-base-300: oklch(28% 0.028 262);
+  --color-base-content: oklch(93% 0.008 250);
+
+  --color-primary: oklch(74% 0.17 52);
+  --color-primary-content: oklch(18% 0.05 52);
+  --color-secondary: oklch(74% 0.035 250);
+  --color-secondary-content: oklch(18% 0.03 250);
+  --color-accent: oklch(74% 0.1 195);
+  --color-accent-content: oklch(18% 0.04 195);
+  --color-neutral: oklch(15% 0.022 262);
+  --color-neutral-content: oklch(93% 0.008 250);
+
+  --color-info: oklch(74% 0.12 240);
+  --color-info-content: oklch(18% 0.05 240);
+  --color-success: oklch(74% 0.14 155);
+  --color-success-content: oklch(18% 0.05 155);
+  --color-warning: oklch(82% 0.15 80);
+  --color-warning-content: oklch(22% 0.06 80);
+  --color-error: oklch(70% 0.18 25);
+  --color-error-content: oklch(18% 0.06 25);
+
+  --radius-selector: 1rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+@theme {
+  --font-sans: "Inter", "Segoe UI Variable", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Cascadia Code", "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 }

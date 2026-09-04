@@ -364,8 +364,8 @@ test('engine: the stored objective is stripped of quote wrappers', () => {
 /**
  * Observed in a real run: the architect submitted a plan, then submitted a
  * second one, and only the second was applied. The first was paid for in full
- * and produced nothing — the same waste the tic-tac-toe forensics found, where
- * four overlapping plans accumulated. Nothing warned about it.
+ * and produced nothing — the same waste measured in a reference run of the earlier
+ * design, where four overlapping plans accumulated. Nothing warned about it.
  */
 test('engine: a plan left unapplied is surfaced, not silently accumulated', () => {
   const dir = mkdtempSync(join(process.env.TEMP || '/tmp', 'foundry-plans-'));
